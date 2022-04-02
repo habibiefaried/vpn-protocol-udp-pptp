@@ -1,0 +1,6 @@
+FROM golang:1.17-buster
+
+COPY . /workdir
+WORKDIR /workdir
+
+RUN apt update && apt install net-tools nano iproute2 -y && go build server.go
