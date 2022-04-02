@@ -8,7 +8,7 @@ services:
     command: ["-c", "(cd __test__ && php -S 0.0.0.0:80 &) && ./vpn-protocol -local 192.168.0.101/24 -remote 10.5.0.102"]
     build:
       context: .
-      dockerfile: Dockerfile.test
+      dockerfile: Dockerfile.integration.test
     networks:
       vpcbr:
         ipv4_address: 10.5.0.101
@@ -19,7 +19,7 @@ services:
     command: ["-c", "(cd __test__ && php -S 0.0.0.0:80 &) && ./vpn-protocol -local 192.168.0.102/24 -remote 10.5.0.101"]
     build:
       context: .
-      dockerfile: Dockerfile.test
+      dockerfile: Dockerfile.integration.test
     networks:
       vpcbr:
         ipv4_address: 10.5.0.102
