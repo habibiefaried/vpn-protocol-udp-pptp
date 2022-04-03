@@ -1,6 +1,4 @@
 integration-test:
 	go fmt ./...
 	go build .
-	docker-compose down --rmi all
-	docker-compose build
-	docker-compose up -d
+	go test -parallel 4 -v integration_test.go
