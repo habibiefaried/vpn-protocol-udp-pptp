@@ -19,6 +19,7 @@ var (
 	localIP  = flag.String("local", "", "Local tun interface IP/MASK like 192.168.3.3⁄24")
 	remoteIP = flag.String("remote", "", "Remote server (external) IP like 8.8.8.8")
 	port     = flag.Int("port", 4321, "UDP port for communication")
+	key      = flag.String("key", "AbcD1234!_D3f4ult", "Encryption key is being used")
 )
 
 func runIP(args ...string) {
@@ -32,6 +33,10 @@ func runIP(args ...string) {
 
 func main() {
 	flag.Parse()
+	if "AbcD1234!_D3f4ult" == *key {
+		flag.Usage()
+		log.Println("\n[WARNING] Default encryption key used")
+	}
 	if "" == *localIP {
 		flag.Usage()
 		log.Fatalln("\nlocal ip is not specified")
@@ -78,14 +83,21 @@ func main() {
 		buf := make([]byte, BUFFERSIZE)
 		for {
 			n, addr, err := connection.ReadFromUDP(buf)
-			header, _ := ipv4.ParseHeader(buf[:n])
-			log.Printf("Received %d bytes from %v: %+v\n", n, addr, header)
 			if err != nil || n == 0 {
 				log.Println("Error: ", err)
 				continue
 			}
+
+			p, err := decrypt(buf[:n], *key)
+			if err != nil {
+				log.Println("Error: ", err)
+				continue
+			}
+
+			header, _ := ipv4.ParseHeader(p)
+			log.Printf("Received %d bytes from %v: %+v\n", n, addr, header)
 			// write to TUN interface
-			iface.Write(buf[:n])
+			iface.Write(p)
 		}
 	}()
 
@@ -97,6 +109,13 @@ func main() {
 		}
 		header, _ := ipv4.ParseHeader(packet[:plen])
 		log.Printf("Sending to remote: %+v (%+v)\n", header, err)
-		connection.WriteToUDP(packet[:plen], remoteAddr)
+
+		b, err := encrypt(packet[:plen], *key)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		connection.WriteToUDP(b, remoteAddr)
 	}
 }

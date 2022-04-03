@@ -9,8 +9,10 @@ require (
 )
 
 require (
+	github.com/bxcodec/faker/v3 v3.8.0 // indirect
 	github.com/davecgh/go-spew v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29 // indirect
 	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
