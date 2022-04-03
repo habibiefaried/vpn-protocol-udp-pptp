@@ -2,6 +2,17 @@ version: '3.1'
 
 services:
 
+  nginx:
+    container_name: externalclient
+    build:
+      context: .
+      dockerfile: Dockerfile.integration.test
+    command: ["-c", "(ip route add 192.168.0.0/24 via 10.72.0.101) && cd __test__ && php -S 0.0.0.0:80"]
+    privileged: true
+    networks:
+      netexternal:
+        ipv4_address: 10.72.0.102
+
   vpnserver:
     container_name: vpnserver
     privileged: true
@@ -12,11 +23,13 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.101
+      netexternal:
+        ipv4_address: 10.72.0.101
 
   vpnclient:
     container_name: vpnclient
     privileged: true
-    command: ["-c", "(cd __test__ && php -S 0.0.0.0:80 &) && ./vpn-protocol -local 192.168.0.102/24 -remote 10.5.0.101"]
+    command: ["-c", "(cd __test__ && php -S 0.0.0.0:80 &) && (./vpn-protocol -local 192.168.0.102/24 -remote 10.5.0.101 &) && sleep 5 && (ip route add 10.72.0.0/24 via 192.168.0.101) && sleep infinity"]
     build:
       context: .
       dockerfile: Dockerfile.integration.test
@@ -31,3 +44,9 @@ networks:
      config:
        - subnet: 10.5.0.0/24
          gateway: 10.5.0.1
+  netexternal:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.72.0.0/24
+         gateway: 10.72.0.1
