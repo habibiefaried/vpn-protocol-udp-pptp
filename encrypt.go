@@ -7,21 +7,19 @@ import (
 	"golang.org/x/crypto/chacha20poly1305"
 )
 
-func encrypt(plaintext, pass string) ([]byte, error) {
+func encrypt(plaintext []byte, pass string) ([]byte, error) {
 	key := sha256.Sum256([]byte(pass))
 	aead, err := chacha20poly1305.NewX(key[:])
 	if err != nil {
 		return nil, err
 	}
 
-	msg := []byte(plaintext)
-
-	nonce := make([]byte, aead.NonceSize(), aead.NonceSize()+len(msg)+aead.Overhead())
+	nonce := make([]byte, aead.NonceSize(), aead.NonceSize()+len(plaintext)+aead.Overhead())
 	if _, err := rand.Read(nonce); err != nil {
 		return nil, err
 	}
 
-	return aead.Seal(nonce, nonce, msg, nil), nil
+	return aead.Seal(nonce, nonce, plaintext, nil), nil
 }
 
 func decrypt(encryptedMsg []byte, pass string) ([]byte, error) {

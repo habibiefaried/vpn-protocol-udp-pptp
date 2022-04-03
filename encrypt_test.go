@@ -20,7 +20,7 @@ func TestEncryptDecrypt(t *testing.T) {
 				msg = msg + "\t \n aaaa  asfmaskcBAHDB*!G*&HQ   (*"
 			}
 
-			b, err := encrypt(msg, key)
+			b, err := encrypt([]byte(msg), key)
 			if err != nil {
 				t.Fatal(err)
 			}
