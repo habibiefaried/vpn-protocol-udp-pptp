@@ -10,11 +10,11 @@ import (
 )
 
 func InfraDown(t *testing.T) {
-	cmd := exec.Command("docker-compose", "down")
+	cmd := exec.Command("docker-compose", "down", "--rmi", "all")
 	stdoutStderr, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Log(string(stdoutStderr))
-		t.Fatal("Running command error: ", err)
+		t.Log("Running command error: ", err)
 	}
 }
 
@@ -61,7 +61,20 @@ func IsRouteOK(t *testing.T, containername, ip, iphop string) {
 	t.Log(string(stdoutStderr))
 }
 
+func IsHTTPOK(t *testing.T, containername, url, expectedresponse string) {
+	t.Parallel()
+	cmd := exec.Command("docker", "exec", containername, "curl", url)
+	cmd.Stdin = os.Stdin
+	stdoutStderr, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Log(string(stdoutStderr))
+		t.Fatal("Running command error: ", err)
+	}
+	assert.Contains(t, string(stdoutStderr), expectedresponse)
+}
+
 func TestInitial(t *testing.T) {
+	InfraDown(t)
 	InfraBuild(t)
 	InfraUp(t)
 	time.Sleep(5)
@@ -91,5 +104,17 @@ func TestInitial(t *testing.T) {
 
 	t.Run("traceroute--external--vpnclient", func(t *testing.T) {
 		IsRouteOK(t, "externalclient", "192.168.0.102", "10.72.0.101")
+	})
+
+	t.Run("HTTP--external--vpnclient", func(t *testing.T) {
+		IsHTTPOK(t, "externalclient", "http://192.168.0.102/", "Hello World!")
+	})
+
+	t.Run("HTTP--vpnclient--external", func(t *testing.T) {
+		IsHTTPOK(t, "vpnclient", "http://10.72.0.102/info.php", `<tr><td class="e">opcache.dups_fix</td><td class="v">Off</td><td class="v">Off</td></tr>`)
+	})
+
+	t.Run("HTTP--vpnclient--vpnserver", func(t *testing.T) {
+		IsHTTPOK(t, "vpnclient", "http://192.168.0.101/info.php", "Websites and Infrastructure team")
 	})
 }

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	BUFFERSIZE = 1500
+	BUFFERSIZE = 2000
 	MTU        = "1300"
 )
 
