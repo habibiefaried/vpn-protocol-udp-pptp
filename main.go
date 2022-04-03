@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	MTU = "1300"
+	BUFFERSIZE = 2000
+	MTU        = "1300"
 )
 
 var (
@@ -74,28 +75,28 @@ func main() {
 
 	defer connection.Close()
 	go func() {
-		buf := []byte{}
+		buf := make([]byte, BUFFERSIZE)
 		for {
 			n, addr, err := connection.ReadFromUDP(buf)
-			header, _ := ipv4.ParseHeader(buf)
+			header, _ := ipv4.ParseHeader(buf[:n])
 			log.Printf("Received %d bytes from %v: %+v\n", n, addr, header)
 			if err != nil || n == 0 {
 				log.Println("Error: ", err)
 				continue
 			}
 			// write to TUN interface
-			iface.Write(buf)
+			iface.Write(buf[:n])
 		}
 	}()
 
-	packet := []byte{}
+	packet := make([]byte, BUFFERSIZE)
 	for {
 		plen, err := iface.Read(packet)
 		if err != nil {
 			break
 		}
-		header, _ := ipv4.ParseHeader(packet)
-		log.Printf("Sending %d bytes to remote: %+v (%+v)\n", plen, header, err)
-		connection.WriteToUDP(packet, remoteAddr)
+		header, _ := ipv4.ParseHeader(packet[:plen])
+		log.Printf("Sending to remote: %+v (%+v)\n", header, err)
+		connection.WriteToUDP(packet[:plen], remoteAddr)
 	}
 }
