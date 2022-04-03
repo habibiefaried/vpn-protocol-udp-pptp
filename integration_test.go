@@ -89,9 +89,6 @@ func TestInitial(t *testing.T) {
 		})
 	}
 
-	t.Run("traceroute--vpnclient--external", func(t *testing.T) {
-		IsRouteOK(t, "vpnclient", "10.72.0.102", "192.168.0.101")
-	})
 	t.Run("traceroute--external--vpnclient", func(t *testing.T) {
 		IsRouteOK(t, "externalclient", "192.168.0.102", "10.72.0.101")
 	})
