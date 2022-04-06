@@ -6,4 +6,3 @@ WORKDIR /workdir
 RUN apt update && apt install net-tools nano iproute2 traceroute php-cli -y && go build .
 
 ENTRYPOINT ["/bin/bash"]
-CMD ["-c", "cd __test__ && php -S 0.0.0.0:80"]
