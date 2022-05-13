@@ -110,7 +110,7 @@ func main() {
 		header, _ := ipv4.ParseHeader(packet[:plen])
 		log.Printf("Sending to remote: %+v (%+v)\n", header, err)
 
-		b, err := encrypt(packet[:plen], *key)
+		b, err := encrypt(packet[:plen-5], *key)
 		if err != nil {
 			log.Println(err)
 			continue
